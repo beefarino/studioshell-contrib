@@ -1,0 +1,14 @@
+
+*~
+*.swp
+*.suo
+*.user
+*.bin
+*.DotSettings
+.DS_Store
+_local
+src/_ReSharper.Splunk.Integration.SCOM
+src/Splunk.Integration.SCOM/_ReSharper.Splunk.Integration.SCOM
+obj
+bin
+Resources/*
