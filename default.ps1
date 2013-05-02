@@ -90,6 +90,11 @@ task __CreateLocalDataDirectory -description $private {
 	}
 }
 
+task EnforceUTF8Encoding -description "re-encodes text files to UTF8 (to prevent being seen as binary by Git)" {
+	$f = ls -rec -inc *.ps1,*.psm1,*.psd1,*.txt;
+    $f | foreach{ $s = $_ | get-content; $s | out-file -file $_ -encoding UTF8 }
+}
+
 # primary targets
 
 task Package -depends __PackageModule -description "assembles distributions in the source hive"
