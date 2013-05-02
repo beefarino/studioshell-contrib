@@ -21,12 +21,12 @@ function test-solutionFolder( [parameter( ValueFromPipeline=$true )] $i )
     $i.kind -match '66A26720-8FB5-11D2-AA7E-00C04F688DDE'
 }
 
-function test-projectFolder( [parameter( ValueFromPipepine=$true )] $i )
+function test-projectFolder( [parameter( ValueFromPipeline=$true )] $i )
 {
     $i.kind -match '6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C'
 }
 
-function test-folder( [parameter( ValueFromPipepine=$true )] $i )
+function test-folder( [parameter( ValueFromPipeline=$true )] $i )
 {
     ( test-solutionFolder $i ) -or ( test-projectFolder $i )
 }
