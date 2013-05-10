@@ -16,52 +16,82 @@
 
 [cmdletbinding()]
 param( 
-    [parameter( ValueFromPipeline=$true, Mandatory=$true )]
+    [parameter()]
+    [switch]
+    # when specified, the root code mode path node for the project is returned; when omitted, the project path node is returned
+    $codeModel,
+
+    [parameter( ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0 )]
     [string]
-    $path, 
-    
-    [parameter( Mandatory=$true )]
+    # the name of the project
     $name  
 )
 
 process
 {    
-    write-debug "testing path $path for project $name"
-    
-    if( $path | join-path -child $name | test-path )
+    function find()
     {
-        $path | join-path -child $name | get-item; 
-    } 
-    else
-    {           
-        get-childitem $path | `
-            where { test-folder $_ } | `
-            select -exp pspath | `
-            find-project -name $name;          
+        param( 
+            [parameter( ValueFromPipeline=$true, Mandatory=$true )]
+            [string]
+            $path,
+            
+            [parameter( Mandatory=$true )]
+            [string]
+            $name
+        ) 
+
+        process
+        {
+            write-debug "testing path $path for project $name"
+    
+            if( $path | join-path -child $name | test-path )
+            {
+                $path | join-path -child $name | get-item; 
+            } 
+            else
+            {           
+                get-childitem $path | `
+                    where { test-folder $_ } | `
+                    select -exp pspath | `
+                    find -name $name;          
+            }
+        }
     }
+
+    $path = 'dte:/solution/projects';
+    if( $codeModel )
+    {
+        $path = 'dte:/solution/codemodel';
+    }
+
+    find -name $name -path $path
 }
 
 
 <#
 .SYNOPSIS 
-Finds a project in the solution hive by its name.
+Finds a project by its name.
 
 .DESCRIPTION
-Finds a project in the solution hive by its name.
+Finds a project by its name.
 
 This function recursively searches the solution and all solution folders for the project specified.
 
-This method is 
-
 .INPUTS
-String.  The root path to search
+String.  The name of the project to find.
 
 .OUTPUTS
 None.
 
 .EXAMPLE
-C:\PS> Mount-Solution 
+C:\PS> find-project -name MyProject
 
-This example mounts the projects node for the currently open solution.
+This example finds the MyProject project node in the currently open solution.
+
+.EXAMPLE
+C:\PS> find-project -name MyProject -codemodel
+
+This example finds the MyProject code model node in the currently open solution.
 #>
 

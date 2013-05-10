@@ -31,9 +31,10 @@ param(
 	$namespace,
     
     [parameter(ParameterSetName='Class', Mandatory=$true)]
+    [alias( 'class','interface','struct','enum' )]
 	[switch] 
-	# when specified, mounts the class for the selected code item
-    $class,
+	# when specified, mounts the class, interface, struct, or enum for the selected code item
+    $type,
     
     [parameter(ParameterSetName='Member', Mandatory=$false)]
     [switch]
@@ -70,12 +71,66 @@ process
         else
         {           
             get-childitem $path | `
-                where { $_ -match 'class' } | `
+                where { $_ -match 'class' -or $_ -match 'namespace' } | `
                 select -exp pspath | `
                 find-class -name $name;          
         }
     }
+
+    function find-member( [parameter(ValueFromPipeline=$true)][string] $path, [string] $name )
+    {
+        write-verbose "testing path $path for member $name"
     
+        if( $path | join-path -child $name | test-path )
+        {
+            $path | join-path -child $name | get-item; 
+        } 
+        else
+        {           
+            $r = get-childitem $path |`
+                select -exp pspath;# | `
+            $r | write-verbose ;
+            $r|    find-member -name $name;          
+        }
+    }
+
+    function select-type
+    {
+        process
+        {
+            $input | where { 
+                $_.kind -match 'class' -or 
+                $_.kind -match 'interface' -or
+                $_.kind -match 'enum' -or
+                $_.kind -match 'struct'                
+            } 
+        }
+    }
+    
+    function select-namespace 
+    {
+        process
+        {
+            $input | where { $_.kind -match 'namespace' }
+        }
+    }
+
+    function select-typeMember
+    {
+        process
+        {
+            $input | where {
+                $_.kind -notmatch 'namespace' -and
+
+                $_.kind -notmatch 'class' -and
+                $_.kind -notmatch 'interface' -and
+                $_.kind -notmatch 'enum' -and
+                $_.kind -notmatch 'struct' -and                
+
+                $_.kind -notmatch 'import'
+            }
+        }
+    }
      
     $items = get-childitem dte:/selectedItems/codeModel;
     
@@ -85,17 +140,19 @@ process
         return;
     }
             
-    $selectedNamespace = $items | where { $_.kind -match 'namespace' } | select -last 1;
-    $selectedClass = $items | where { $_.kind -match 'class' } | select -last 1;
-    $item = $items | where{ ( $_ -notmatch 'namespace' -and $_ -notmatch 'class' ) } | select -last 1;
+    $selectedNamespace = $items | select-namespace | select-object  -last 1;
+    $selectedClass = $items | select-type | select-object -last 1;
+    $item = $items | select-typeMember | select-object -last 1;
+    
+    write-verbose "namespace: $($selectedNamespace.name); type: $($selectedClass.Name); member: $($item.Name)";
     if( $namespace -and -not $selectedNamespace )
     {
         write-error "There is no namespace selected"
         return;
     }
-    elseif( $class -and -not $selectedClass )
+    elseif( $type -and -not $selectedClass )
     {
-        write-error "There is no class selected"
+        write-error "There is no type selected"
         return;
     }
     elseif( $member -and -not $item )
@@ -104,43 +161,46 @@ process
         return;
     }      
    
-    $item = $item,$selectedClass,$selectedNamespace | select -first 1;
+    $targetitem = $item,$selectedClass,$selectedNamespace | select -first 1;
+    write-verbose "locating selected item $($item.pspath)"
     
     # find the container project and item
-    $projectItem = $item.projectItem;
-    $project = $projectItem.containingProject;
+    $targetprojectItem = $targetitem.projectItem;
+    $project = $targetprojectItem.containingProject;
     $projectName = $project.Name;
     
-    $projectNode = find-project -path dte:/solution/codemodel -name $projectName
-    write-verbose "Found project node $($projectNode.PSPath)"
-    
-    $projectItem = find-projectItem -path $projectNode.pspath -name $projectItem.Name
+    write-verbose "project name: $projectName; project item name : $($targetItem.name)"
+
+    $projectItem = find-projectItem -codemodel -projectName $projectName -itemname $targetProjectItem.Name
     write-verbose "Found project item node $($projectItem.pspath)"
     
-    $namespaceItem = find-namespace -path $projectItem.pspath -name $selectedNamespace.Name;
-    write-verbose "Found namespace node $($namespaceItem.pspath)"
-    
+    if( $file )
+    {
+        write-verbose ("pushing location of container for " + $projectItem.filename)
+        $projectItem.filename | split-path | push-location;
+        return;
+    }
+
+    $projectItem = find-namespace -path $projectItem.pspath -name $selectedNamespace.Name;
+    write-verbose "Namespace result: $($projectItem.pspath)"
     if( $namespace )
     {
-        set-location $namespaceItem.pspath;
+        $projectItem.pspath | push-location;
         return;
     }
-    
-    $classItem = find-class -path $namespaceItem.pspath -name $selectedClass.Name;
-    write-verbose "Found class node $($classItem.pspath)"
-    
-    if( $class )
+
+    $projectItem = find-class -path $projectitem.pspath -name $selectedClass.Name;
+    write-verbose "Class result: $($projectItem.pspath)"
+    if( $type )
     {
-        set-location $classItem.pspath;
+        $projectItem.pspath | push-location;
         return;
     }
+
+    $projectItem = find-member -path $projectitem.pspath -name $item.name;
+    write-verbose "Member results: $($projectItem.pspath)"
     
-    $p = ( $classItem.pspath | join-path -child $item.Name );
-    write-verbose "Looking for member path $p ( $($classItem.pspath); $($item.name) )";
-    $itemNode = get-item -path $p
-    write-verbose "Found member item node $($itemNode.pspath)"
-    
-    set-location $itemNode.pspath
+    $projectItem.pspath | push-location;
 }
 
 <#

@@ -16,29 +16,52 @@
 
 [cmdletbinding()]
 param( 
-    [parameter( ValueFromPipeline=$true, Mandatory=$true )]
+    [parameter( Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true )]
     [string]
-    $path, 
+    $projectName,
     
     [parameter( Mandatory=$true )]
-    $name  
+    [string]
+    $itemName,
+    
+    [parameter()]
+    [switch]
+    $codeModel  
 )
 
 process
 {    
-    write-debug "testing path $path for project item $name"
-    
-    if( $path | join-path -child $name | test-path )
+    function find()
     {
-        $path | join-path -child $name | get-item; 
-    } 
-    else
-    {           
-        get-childitem $path | `
-            where { test-projectFolder $_ } | `
-            select -exp pspath | `
-            find-projectItem -name $name;          
+        param( 
+            [parameter( ValueFromPipeline=$true, Mandatory=$true )]
+            [string]
+            $path,
+            
+            [parameter( Mandatory=$true )]
+            [string]
+            $name
+        ) 
+
+        process
+        {
+            write-verbose "testing path $path for item $name"
+    
+            if( $path | join-path -child $name | test-path )
+            {
+                $path | join-path -child $name | get-item; 
+            } 
+            else
+            {           
+                get-childitem $path | `
+                    where { test-folder $_ } | `
+                    select -exp pspath | `
+                    find -name $name;          
+            }
+        }
     }
+
+    find-project $projectName -codeModel:$codeModel| select -exp pspath | find -name $itemname 
 }
 
 
@@ -52,14 +75,14 @@ Finds a project item in the project hive by its name.
 This function recursively searches the project for the project item specified.
 
 .INPUTS
-String.  The root path to search
+String.  The name of the project to search for the item
 
 .OUTPUTS
 None.
 
 .EXAMPLE
-C:\PS> Mount-Solution 
+C:\PS> find-projectItem -projectName 'MyProject' -itemName 'Program.cs'
 
-This example mounts the projects node for the currently open solution.
+This example locates the project item for the code file Program.cs in the project named MyProject.
 #>
 

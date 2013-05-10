@@ -16,17 +16,26 @@
 #	ProjectItemTypes submodule
 #
 
-function test-solutionFolder( [parameter( ValueFromPipeline=$true )] $project )
+function test-solutionFolder( [parameter( ValueFromPipeline=$true, Position=0 )] $project )
 {
-    $project.kind -match '66A26720-8FB5-11D2-AA7E-00C04F688DDE'
+    process
+    {
+        $project.kind -match '66A26720-8FB5-11D2-AA7E-00C04F688DDE'
+    }
 }
 
-function test-projectFolder( [parameter( ValueFromPipeline=$true )] $project )
+function test-projectFolder( [parameter( ValueFromPipeline=$true, Position=0 )] $project )
 {
-    $project.kind -match '6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C'
+    process
+    {
+        $project.kind -match '6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C'
+    }
 }
 
-function test-folder( [parameter( ValueFromPipeline=$true )] $project )
+function test-folder( [parameter( ValueFromPipeline=$true, Position=0 )] $project )
 {
-    ( test-solutionFolder $project ) -or ( test-projectFolder $project )
+    process
+    {
+        ( test-solutionFolder $project ) -or ( test-projectFolder $project )
+    }
 }

@@ -17,28 +17,34 @@
 #
 
 
-[CmdletBinding(DefaultParameterSetName='MountCM')]
+[CmdletBinding(DefaultParameterSetName='MountPM')]
 param( 
 	[parameter(Mandatory=$false, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
     [alias( "Name" )]
 	[string] 
 	# the name or powershell path of the project to mount
-	$project = ( get-childitem dte:/selectedItems/projects | select-object -first 1 -expand Name ),
+	$projectName = ( get-childitem dte:/selectedItems/projects | select-object -first 1 -expand Name ),
     
     [parameter(ParameterSetName='MountFS', Mandatory=$true)]
 	[switch] 
 	# when specified, mounts the filesystem location of the project
 	$fileSystem,
     
-    [parameter(ParameterSetName='MountCM', Mandatory=$false)]
+    [parameter(ParameterSetName='MountCM', Mandatory=$true)]
 	[switch] 
 	# when specified, mounts the codemodel location of the project
-	$codeModel     
+	$codeModel,
+
+
+    [parameter(ParameterSetName='MountPM', Mandatory=$false)]
+	[switch] 
+	# when specified, mounts the project model location of the project
+	$projectModel     
 );
 
 process
 {       
-    if( -not $project )
+    if( -not $projectName )
     {
         write-error 'No project name was specified, and there is no currently selected project to mount';
         return;
@@ -46,12 +52,12 @@ process
     
     if( $fileSystem )
     {
-        $item = get-item dte:/solution/projects/$project;
+        $item =  find-project $projectName;
         set-location ( $item.fileName | split-path );   
         return;     
     }
-    
-    set-location ( join-path "dte:/solution/codemodel" -child $project );
+
+    find-project $projectName -codemodel:$codeModel | select-object -expand pspath | set-location;
     
 }
 
