@@ -37,101 +37,14 @@ param(
     $type,
     
     [parameter(ParameterSetName='Member', Mandatory=$false)]
+    [alias( 'method','property','field','event' )]
     [switch]
+    # when specified, mounts the selected code item member (method, property, field, or event)
     $member
 );
 
 process
 {      
-    function find-namespace( [parameter(ValueFromPipeline=$true)][string] $path, [string] $name )
-    {
-        write-verbose "testing path $path for namespace $name"
-    
-        if( $path | join-path -child $name | test-path )
-        {
-            $path | join-path -child $name | get-item; 
-        } 
-        else
-        {           
-            get-childitem $path | `
-                where { $_ -match 'namespace' } | `
-                select -exp pspath | `
-                find-namespace -name $name;          
-        }
-    }
-    
-    function find-class( [parameter(ValueFromPipeline=$true)][string] $path, [string] $name )
-    {
-        write-verbose "testing path $path for class $name"
-    
-        if( $path | join-path -child $name | test-path )
-        {
-            $path | join-path -child $name | get-item; 
-        } 
-        else
-        {           
-            get-childitem $path | `
-                where { $_ -match 'class' -or $_ -match 'namespace' } | `
-                select -exp pspath | `
-                find-class -name $name;          
-        }
-    }
-
-    function find-member( [parameter(ValueFromPipeline=$true)][string] $path, [string] $name )
-    {
-        write-verbose "testing path $path for member $name"
-    
-        if( $path | join-path -child $name | test-path )
-        {
-            $path | join-path -child $name | get-item; 
-        } 
-        else
-        {           
-            $r = get-childitem $path |`
-                select -exp pspath;# | `
-            $r | write-verbose ;
-            $r|    find-member -name $name;          
-        }
-    }
-
-    function select-type
-    {
-        process
-        {
-            $input | where { 
-                $_.kind -match 'class' -or 
-                $_.kind -match 'interface' -or
-                $_.kind -match 'enum' -or
-                $_.kind -match 'struct'                
-            } 
-        }
-    }
-    
-    function select-namespace 
-    {
-        process
-        {
-            $input | where { $_.kind -match 'namespace' }
-        }
-    }
-
-    function select-typeMember
-    {
-        process
-        {
-            $input | where {
-                $_.kind -notmatch 'namespace' -and
-
-                $_.kind -notmatch 'class' -and
-                $_.kind -notmatch 'interface' -and
-                $_.kind -notmatch 'enum' -and
-                $_.kind -notmatch 'struct' -and                
-
-                $_.kind -notmatch 'import'
-            }
-        }
-    }
-     
     $items = get-childitem dte:/selectedItems/codeModel;
     
     if( -not $items )
@@ -171,7 +84,7 @@ process
     
     write-verbose "project name: $projectName; project item name : $($targetItem.name)"
 
-    $projectItem = find-projectItem -codemodel -projectName $projectName -itemname $targetProjectItem.Name
+    $projectItem = get-projectItem -codemodel -projectName $projectName -itemname $targetProjectItem.Name
     write-verbose "Found project item node $($projectItem.pspath)"
     
     if( $file )
@@ -189,7 +102,7 @@ process
         return;
     }
 
-    $projectItem = find-class -path $projectitem.pspath -name $selectedClass.Name;
+    $projectItem = find-type -path $projectitem.pspath -name $selectedClass.Name;
     write-verbose "Class result: $($projectItem.pspath)"
     if( $type )
     {
@@ -210,6 +123,9 @@ Mounts the code model element with the current input focus.
 .DESCRIPTION
 Mounts the code model element with the current input focus.
 
+The host location is set to the path node representing the code model of the currently selected namespace,
+type, or member, or to the path of the file containing the selected code model elements. 
+
 .INPUTS
 None.
 
@@ -227,9 +143,9 @@ C:\PS> Mount-CodeModel -file
 This example mounts the code model node for the file containing the currently focused code.
 
 .EXAMPLE
-C:\PS> Mount-CodeModel -class
+C:\PS> Mount-CodeModel -type
 
-This example mounts the code model node for the class containing the currently focused code.
+This example mounts the code model node for the type (class, struct, enum, or interface) containing the currently focused code.
 
 .EXAMPLE
 C:\PS> Mount-CodeModel -member

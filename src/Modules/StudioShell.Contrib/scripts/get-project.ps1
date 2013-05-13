@@ -22,8 +22,8 @@ param(
     $codeModel,
 
     [parameter( ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0 )]
-    [string]
-    # the name of the project
+    [string[]]
+    # the name of the project; wildcards permitted
     $name  
 )
 
@@ -49,13 +49,12 @@ process
             {
                 $path | join-path -child $name | get-item; 
             } 
-            else
-            {           
-                get-childitem $path | `
-                    where { test-folder $_ } | `
-                    select -exp pspath | `
-                    find -name $name;          
-            }
+            
+            get-childitem $path | `
+                select-folder | `
+                select -exp pspath | `
+                find -name $name;          
+        
         }
     }
 
@@ -65,7 +64,7 @@ process
         $path = 'dte:/solution/codemodel';
     }
 
-    find -name $name -path $path
+    $name | foreach { $path | find -name $_ }
 }
 
 
@@ -76,7 +75,7 @@ Finds a project by its name.
 .DESCRIPTION
 Finds a project by its name.
 
-This function recursively searches the solution and all solution folders for the project specified.
+This function recursively searches the solution and all solution folders for the project(s) specified.
 
 .INPUTS
 String.  The name of the project to find.
@@ -85,13 +84,19 @@ String.  The name of the project to find.
 None.
 
 .EXAMPLE
-C:\PS> find-project -name MyProject
+C:\PS> get-project -name MyProject
 
 This example finds the MyProject project node in the currently open solution.
 
 .EXAMPLE
-C:\PS> find-project -name MyProject -codemodel
+C:\PS> get-project -name MyProject -codemodel
 
 This example finds the MyProject code model node in the currently open solution.
+
+
+.EXAMPLE
+C:\PS> get-project -name CodeOwls.*
+
+This example finds all project nodes with names that begin with "CodeOwls." in the currently open solution.
 #>
 

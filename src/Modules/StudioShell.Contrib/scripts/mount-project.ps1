@@ -52,12 +52,12 @@ process
     
     if( $fileSystem )
     {
-        $item =  find-project $projectName;
+        $item =  get-project $projectName;
         set-location ( $item.fileName | split-path );   
         return;     
     }
 
-    find-project $projectName -codemodel:$codeModel | select-object -expand pspath | set-location;
+    get-project $projectName -codemodel:$codeModel | select-object -expand pspath | set-location;
     
 }
 
