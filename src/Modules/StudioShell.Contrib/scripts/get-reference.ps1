@@ -21,7 +21,7 @@ param(
     # the name of the project containing the reference; wildcards permitted
     $projectName = @('*'),
     
-    [parameter( Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true )]
+    [parameter( Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Position=0 )]
     [alias('reference')]
     [string[]]
     # the name of the reference to retrieve; wildcards permitted

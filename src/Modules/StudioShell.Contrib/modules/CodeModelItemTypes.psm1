@@ -19,12 +19,13 @@
 function find-namespace
 {
     param( 
-        [parameter(Mandatory=$true, ValueFromPipeline=$true)]
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+        [alias('PSPath')]
         [string] 
         # the path to search
         $path, 
         
-        [parameter(Mandatory=$true)]
+        [parameter(Mandatory=$true, Position=0)]
         [alias("namespace")]
         [string[]] 
         # the name of the namespace to find; wildcards permitted
@@ -70,12 +71,13 @@ function find-namespace
 function find-type
 {
     param( 
-        [parameter(Mandatory=$true, ValueFromPipeline=$true)]
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+        [alias( 'PSPath' )]
         [string] 
         # the path to search
         $path, 
         
-        [parameter(Mandatory=$true)]
+        [parameter(Mandatory=$true, Position=0)]
         [string[]] 
         # the name of the type to find; wildcards permitted
         $name 
@@ -119,12 +121,13 @@ function find-type
 function find-member
 {
     param( 
-        [parameter(Mandatory=$false, ValueFromPipeline=$true)]
+        [parameter(Mandatory=$false, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+        [alias( 'PSPath' )]
         [string] 
         # the path to search
         $path, 
         
-        [parameter()]
+        [parameter(Mandatory=$true, Position=0)]
         [string[]] 
         # the name of the member to find; wildcards permitted
         $name 

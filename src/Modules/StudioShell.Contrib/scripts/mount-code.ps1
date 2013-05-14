@@ -84,7 +84,7 @@ process
     
     write-verbose "project name: $projectName; project item name : $($targetItem.name)"
 
-    $projectItem = get-projectItem -codemodel -projectName $projectName -itemname $targetProjectItem.Name
+    $projectItem = get-projectItem -codemodel -projectName $projectName -itemname $targetProjectItem.Name | select-object -first 1
     write-verbose "Found project item node $($projectItem.pspath)"
     
     if( $file )

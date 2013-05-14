@@ -21,7 +21,7 @@ param(
     # the name of the project containing the item; wildcards permitted
     $projectName = @('*'),
     
-    [parameter( Mandatory=$true )]
+    [parameter( Mandatory=$true, Position=0 )]
     [alias('itemName')]
     [string[]]
     # the name of the project item to retrieve; wildcards permitted

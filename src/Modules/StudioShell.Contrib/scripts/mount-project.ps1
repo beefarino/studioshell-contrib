@@ -19,10 +19,10 @@
 
 [CmdletBinding(DefaultParameterSetName='MountPM')]
 param( 
-	[parameter(Mandatory=$false, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+	[parameter(Mandatory=$false, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Position=0)]
     [alias( "Name" )]
 	[string] 
-	# the name or powershell path of the project to mount
+	# the name or powershell path of the project to mount; if unspecified it defaults to the currently selected project
 	$projectName = ( get-childitem dte:/selectedItems/projects | select-object -first 1 -expand Name ),
     
     [parameter(ParameterSetName='MountFS', Mandatory=$true)]
@@ -53,7 +53,10 @@ process
     if( $fileSystem )
     {
         $item =  get-project $projectName;
-        set-location ( $item.fileName | split-path );   
+        if( $item -and $item.filename )
+        {
+            set-location ( $item.fileName | split-path );   
+        }
         return;     
     }
 

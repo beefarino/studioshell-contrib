@@ -55,7 +55,7 @@ function test-projectFolder
 
     process
     {
-        $project.kind -match '6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C'
+        $project.itemType -eq 'Folder'
     }
 <# 
    .Synopsis 
@@ -69,6 +69,35 @@ function test-projectFolder
     true if the object is a project folder; false otherwise
    .Notes 
     NAME: test-projectFolder 
+    AUTHOR: beefarino 
+   #Requires -Version 2.0 
+#>
+}
+
+function test-projectFileItem
+{
+    param ( 
+        [parameter( ValueFromPipeline=$true, Position=0 )] 
+        # the object to test
+        $projectItem 
+    )
+
+    process
+    {
+        $projectItem.itemType -eq 'File'
+    }
+<# 
+   .Synopsis 
+    Returns true when the input is a file project item object, such as a code file
+   .Example 
+    get-item dte:\solution\projects\myProj\main.cs | test-projectFileItem
+    Returns true if "main.cs" represents a file in the myProj project
+   .Inputs
+    Object.  the object to test
+   .Outputs
+    true if the object is a project file item; false otherwise
+   .Notes 
+    NAME: test-projectFileItem
     AUTHOR: beefarino 
    #Requires -Version 2.0 
 #>

@@ -21,10 +21,11 @@ param(
     # when specified, the root code mode path node for the project is returned; when omitted, the project path node is returned
     $codeModel,
 
-    [parameter( ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$true, Position=0 )]
+    [parameter( ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$false, Position=0 )]
+    [alias( 'projectName' )]
     [string[]]
     # the name of the project; wildcards permitted
-    $name  
+    $name 
 )
 
 process
@@ -51,7 +52,7 @@ process
             } 
             
             get-childitem $path | `
-                select-folder | `
+                select-solutionFolder | `
                 select -exp pspath | `
                 find -name $name;          
         
