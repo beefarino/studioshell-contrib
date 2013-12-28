@@ -79,7 +79,7 @@ None.
 .EXAMPLE
 C:\PS> Mount-Solution 
 
-This example mounts the projects node for the currently open solution.
+This example mounts the root code model node for the currently open solution.
 
 .EXAMPLE
 C:\PS> Mount-Solution -fileSystem
@@ -87,8 +87,8 @@ C:\PS> Mount-Solution -fileSystem
 This example mounts the current file system folder containing the open solution.
 
 .EXAMPLE
-C:\PS> Mount-Solution -codeModel
+C:\PS> Mount-Solution -projects
 
-This example mounts the root code model path of the current solution.
+This example mounts the projects node of the current solution.
 #>
 

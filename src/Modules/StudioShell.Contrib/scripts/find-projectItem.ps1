@@ -58,8 +58,8 @@ String.  The root path to search
 None.
 
 .EXAMPLE
-C:\PS> Mount-Solution 
+C:\PS> find-projectitem -path dte:/solution/projects/MyProject -name MyClass.cs
 
-This example mounts the projects node for the currently open solution.
+This searches the MyProject project file hierarchy for the file named MyClass.cs
 #>
 
