@@ -15,7 +15,12 @@
 #
 
 [cmdletbinding()]
-param()
+param(
+    [parameter()]
+    [switch]
+    # when specified, any existing solution module will be overwritten
+    $force
+)
 
 process
 {    
@@ -25,11 +30,32 @@ process
     
     if( -not $sln.isOpen )
     {
-        write-error "There is no open solution to which to add a solution module";
+        write-warning "There is no open solution to which to add a solution module";
         return;
     } 
         
     $modulePath = $sln.FullName -replace '\.sln$','.psm1';
+
+    if( ( test-path $modulePath ) )
+    {
+        if(-not $force )
+        {
+            $r = $PSCmdlet.ShouldContinue(
+                "A solution module exists at path $modulePath.  If you continue, this existing module will be overwritten.  Continue?",
+                "Solution Module Already Exists"
+            );
+
+            if( -not $r )
+            {
+                write-error "A solution module already exists at path $modulePath; use the -force parameter to overwrite this existing solution module";
+                return;
+            }
+        }
+
+        remove-item $modulePath -force;
+        remove-item -path ( join-path 'dte:/solution/projects/solution items'  ($modulePath | split-path -leaf )) -force;
+    }
+
     $slnName = ( $sln.FullName | split-path -leaf ) -replace '\..+$','';
     
     @"
@@ -37,7 +63,7 @@ process
 # 
 
 `$menuItems = @(
-    # list any menu items your module will add in here
+    # list any menu items your module adds here
     #
     # e.g.:
     # new-item dte:/commandbars/help -name 'about my module' -value { 'Module ${slnName}' | out-outputpane; invoke-item dte:/windows/output; }

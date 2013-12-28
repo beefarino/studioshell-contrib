@@ -1,4 +1,3 @@
-﻿#
 #   Copyright (c) 2013 Code Owls LLC, All Rights Reserved.
 #
 #   Licensed under the Apache License, version 2.0 (the "License");
@@ -17,19 +16,19 @@
 #
 
 
-[CmdletBinding(DefaultParameterSetName='MountCM')]
+[CmdletBinding(DefaultParameterSetName='MountPI')]
 param( 
 	[parameter(ParameterSetName='MountFS', Mandatory=$true)]
 	[switch] 
 	# when specified, mounts the filesystem location of the solution
 	$fileSystem,
     
-    [parameter(ParameterSetName='MountCM', Mandatory=$false)]
+    [parameter(ParameterSetName='MountCM', Mandatory=$true)]
 	[switch] 
 	# when specified, mounts the codemodel location of the solution
 	$codeModel,
     
-    [parameter(ParameterSetName='MountPI', Mandatory=$true)]
+    [parameter(ParameterSetName='MountPI', Mandatory=$false)]
 	[switch] 
 	# when specified, mounts the project items location of the solution
 	$projects
@@ -60,7 +59,7 @@ process
         $slnPath = "dte:/solution/codemodel";
     }
     
-    set-location $slnPath;
+    $slnPath | push-location;
 }
 
 <#
@@ -79,7 +78,7 @@ None.
 .EXAMPLE
 C:\PS> Mount-Solution 
 
-This example mounts the root code model node for the currently open solution.
+This example mounts the projects node for the currently open solution.
 
 .EXAMPLE
 C:\PS> Mount-Solution -fileSystem
@@ -87,8 +86,7 @@ C:\PS> Mount-Solution -fileSystem
 This example mounts the current file system folder containing the open solution.
 
 .EXAMPLE
-C:\PS> Mount-Solution -projects
+C:\PS> Mount-Solution -codeModel
 
-This example mounts the projects node of the current solution.
+This example mounts the root code model path of the current solution.
 #>
-
