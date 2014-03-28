@@ -65,30 +65,25 @@ process
 
 <#
 .SYNOPSIS 
-Mounts the file system or code model location of the project.
+Reloads the specified project.
 
 .DESCRIPTION
-Mounts the file system or code model location of the project.
+Reloads the specified project.
 
 .INPUTS
-String.  The name of the project to mount.  If unspecified, the project currently selected in Solution Explorer is mounted.
+String.  The name of the project to reload.  If unspecified, the project currently selected in Solution Explorer is reloaded.
 
 .OUTPUTS
 None.
 
 .EXAMPLE
-C:\PS> Mount-Project 
+C:\PS> Update-Project 
 
-This example mounts the code model for the currently selected project.
-
-.EXAMPLE
-C:\PS> Mount-Project -fileSystem
-
-This example mounts the file system folder containing the selected project.
+This example reloads the currently selected project.
 
 .EXAMPLE
-C:\PS> Mount-Project -name MyProject -codeModel
+C:\PS> Update-Project -name MyProject
 
-This example mounts the root code model path of the project named MyProject.
+This example reloads the MyProject project.
 #>
 
